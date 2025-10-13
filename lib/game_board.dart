@@ -45,12 +45,12 @@ class _GameBoardState extends State<GameBoard> {
       newBoard[1][i] = ChessPiece(
         type: ChessPieceType.pawn,
         isWhite: false,
-        imagePath: 'lib/chessIcon/pawn.png',
+        imagePath: 'lib/chessIcon/pawnCapy.png',
       );
       newBoard[6][i] = ChessPiece(
         type: ChessPieceType.pawn,
         isWhite: true,
-        imagePath: 'lib/chessIcon/pawn.png',
+        imagePath: 'lib/chessIcon/pawnCapy.png',
       );
     }
 
@@ -58,90 +58,90 @@ class _GameBoardState extends State<GameBoard> {
     newBoard[0][0] = ChessPiece(
       type: ChessPieceType.rook,
       isWhite: false,
-      imagePath: 'lib/chessIcon/rook.png',
+      imagePath: 'lib/chessIcon/rookCapy.png',
     );
     newBoard[0][7] = ChessPiece(
       type: ChessPieceType.rook,
       isWhite: false,
-      imagePath: 'lib/chessIcon/rook.png',
+      imagePath: 'lib/chessIcon/rookCapy.png',
     );
     newBoard[7][0] = ChessPiece(
       type: ChessPieceType.rook,
       isWhite: true,
-      imagePath: 'lib/chessIcon/rook.png',
+      imagePath: 'lib/chessIcon/rookCapy.png',
     );
     newBoard[7][7] = ChessPiece(
       type: ChessPieceType.rook,
       isWhite: true,
-      imagePath: 'lib/chessIcon/rook.png',
+      imagePath: 'lib/chessIcon/rookCapy.png',
     );
 
     //placement des cavaliers
     newBoard[0][1] = ChessPiece(
       type: ChessPieceType.knight,
       isWhite: false,
-      imagePath: 'lib/chessIcon/knight.png',
+      imagePath: 'lib/chessIcon/knightCapy.png',
     );
     newBoard[0][6] = ChessPiece(
       type: ChessPieceType.knight,
       isWhite: false,
-      imagePath: 'lib/chessIcon/knight.png',
+      imagePath: 'lib/chessIcon/knightCapy.png',
     );
     newBoard[7][1] = ChessPiece(
       type: ChessPieceType.knight,
       isWhite: true,
-      imagePath: 'lib/chessIcon/knight.png',
+      imagePath: 'lib/chessIcon/knightCapy.png',
     );
     newBoard[7][6] = ChessPiece(
       type: ChessPieceType.knight,
       isWhite: true,
-      imagePath: 'lib/chessIcon/knight.png',
+      imagePath: 'lib/chessIcon/knightCapy.png',
     );
 
     //placement des fous
     newBoard[0][2] = ChessPiece(
       type: ChessPieceType.bishop,
       isWhite: false,
-      imagePath: 'lib/chessIcon/bishop.png',
+      imagePath: 'lib/chessIcon/bishopCapy.png',
     );
     newBoard[0][5] = ChessPiece(
       type: ChessPieceType.bishop,
       isWhite: false,
-      imagePath: 'lib/chessIcon/bishop.png',
+      imagePath: 'lib/chessIcon/bishopCapy.png',
     );
     newBoard[7][2] = ChessPiece(
       type: ChessPieceType.bishop,
       isWhite: true,
-      imagePath: 'lib/chessIcon/bishop.png',
+      imagePath: 'lib/chessIcon/bishopCapy.png',
     );
     newBoard[7][5] = ChessPiece(
       type: ChessPieceType.bishop,
       isWhite: true,
-      imagePath: 'lib/chessIcon/bishop.png',
+      imagePath: 'lib/chessIcon/bishopCapy.png',
     );
 
     //placement des reines
     newBoard[0][3] = ChessPiece(
       type: ChessPieceType.queen,
       isWhite: false,
-      imagePath: 'lib/chessIcon/queen.png',
+      imagePath: 'lib/chessIcon/queenCapy.png',
     );
     newBoard[7][4] = ChessPiece(
       type: ChessPieceType.queen,
       isWhite: true,
-      imagePath: 'lib/chessIcon/queen.png',
+      imagePath: 'lib/chessIcon/queenCapy.png',
     );
 
     //placement des rois
     newBoard[0][4] = ChessPiece(
       type: ChessPieceType.king,
       isWhite: false,
-      imagePath: 'lib/chessIcon/king.png',
+      imagePath: 'lib/chessIcon/kingCapy.png',
     );
     newBoard[7][3] = ChessPiece(
       type: ChessPieceType.king,
       isWhite: true,
-      imagePath: 'lib/chessIcon/king.png',
+      imagePath: 'lib/chessIcon/kingCapy.png',
     );
 
     board = newBoard;
