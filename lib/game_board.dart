@@ -39,7 +39,7 @@ class _GameBoardState extends State<GameBoard> {
 
   //initial position of kings (keep track of this to make it easier later to see if king is in check
   List<int> whiteKingPosition = [7, 4];
-  List<int> blackKingPosition = [0, 5];
+  List<int> blackKingPosition = [0, 4];
   bool checkStatus = false;
 
   @override
@@ -474,7 +474,126 @@ class _GameBoardState extends State<GameBoard> {
       validMoves = [];
     });
 
+    // check if it's checkmate after the move
+    if (isCheckMate(!isWhiteTurn)) {
+      String winner = isWhiteTurn ? "Blancs" : "Noirs";
+      _showCheckmateDialog(winner);
+    }
+
+    //change turn
     isWhiteTurn = !isWhiteTurn;
+  }
+
+  void _showCheckmateDialog(String winner) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => Dialog(
+            backgroundColor: Colors.transparent,
+            child: Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.grey[900]!, Colors.grey[800]!],
+                ),
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black54,
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Couronne animée
+                  Icon(Icons.workspace_premium, color: Colors.amber, size: 60),
+
+                  SizedBox(height: 15),
+
+                  // Titre principal
+                  Text(
+                    "VICTOIRE!",
+                    style: TextStyle(
+                      color: Colors.amber,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    ),
+                  ),
+
+                  SizedBox(height: 10),
+
+                  // Message du gagnant
+                  Text(
+                    "Les $winner gagnent par échec et mat",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+
+                  SizedBox(height: 20),
+
+                  // Boutons d'action
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(
+                              context,
+                            ).pop(); // Ferme la boîte de dialogue
+                            resetGame(); // Réinitialise le jeu
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            "NOUVELLE PARTIE",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
+  Widget _buildStat(String title, String value) {
+    return Column(
+      children: [
+        Text(title, style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+        SizedBox(height: 5),
+        Text(
+          value,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
   }
 
   // is king in check
@@ -550,6 +669,56 @@ class _GameBoardState extends State<GameBoard> {
     return !isInCheck;
   }
 
+  // is it check mate
+  bool isCheckMate(bool isWhiteKing) {
+    // if the king is not in check, it's not checkmate
+    if (!isKingInCheck(isWhiteKing)) {
+      return false;
+    }
+    // check if any move can get the king out of check
+    for (int i = 0; i < 8; i++) {
+      for (int j = 0; j < 8; j++) {
+        if (board[i][j] != null && board[i][j]!.isWhite == isWhiteKing) {
+          List<List<int>> moves = calculateRealValidMoves(
+            i,
+            j,
+            board[i][j],
+            true,
+          );
+          for (var move in moves) {
+            if (simulationMoveIsSafe(board[i][j]!, i, j, move[0], move[1])) {
+              return false; // found a move that gets the king out of check
+            }
+          }
+        }
+      }
+    }
+    return true; // no moves found to get the king out of check
+  }
+
+ //reset the game
+void resetGame() {
+  // shut down any open dialogs
+  if (Navigator.of(context).canPop()) {
+    Navigator.of(context).pop();
+  }
+  
+  // reset all variables
+  setState(() {
+    _initializeBoard();
+    selectedPiece = null;
+    selectedRow = -1;
+    selectedCol = -1;
+    validMoves = [];
+    whitePiecesTaken.clear();
+    blackPiecesTaken.clear();
+    isWhiteTurn = true;
+    checkStatus = false;
+    whiteKingPosition = [7, 4];
+    blackKingPosition = [0, 4];
+  });
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -571,9 +740,6 @@ class _GameBoardState extends State<GameBoard> {
                   ),
             ),
           ),
-
-          //check status
-          Text(checkStatus ? "Check!" : ""),
 
           //chess board
           Expanded(
