@@ -512,7 +512,11 @@ class _GameBoardState extends State<GameBoard> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Couronne animée
-                  Icon(Icons.workspace_premium, color: Colors.amber, size: 60),
+                  Image.asset(
+                    'lib/images/tete_capybara.jpg',
+                    width: 100,
+                    height: 100,
+                  ),
 
                   SizedBox(height: 15),
 
