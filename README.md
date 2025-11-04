@@ -2,8 +2,6 @@
 
 Un jeu d'échecs élégant développé avec Flutter, mettant en scène des capybaras comme pièces d'échecs.
 
-![Capture d'écran du jeu](https://via.placeholder.com/400x800/333/FFFFFF?text=CapyChess)
-
 ## ✨ Fonctionnalités
 
 - **🎯 Interface intuitive** : Plateau d'échecs 8x8 avec design moderne
