@@ -407,6 +407,9 @@ class _GameBoardState extends State<GameBoard> {
 
   //move the piece
   void movePiece(int newRow, int newCol) {
+    // SAUVEGARDER selectedPiece AVANT de le mettre à null
+    ChessPiece? movedPiece = selectedPiece;
+
     if (board[newRow][newCol] != null) {
       var capturedPiece = board[newRow][newCol];
       if (capturedPiece!.isWhite) {
@@ -417,8 +420,8 @@ class _GameBoardState extends State<GameBoard> {
     }
 
     // Mettre à jour la position du roi si nécessaire
-    if (selectedPiece!.type == ChessPieceType.king) {
-      if (selectedPiece!.isWhite) {
+    if (movedPiece!.type == ChessPieceType.king) {
+      if (movedPiece.isWhite) {
         whiteKingPosition = [newRow, newCol];
       } else {
         blackKingPosition = [newRow, newCol];
@@ -426,29 +429,22 @@ class _GameBoardState extends State<GameBoard> {
     }
 
     // Déplacer la pièce
-    board[newRow][newCol] = selectedPiece;
+    board[newRow][newCol] = movedPiece;
     board[selectedRow][selectedCol] = null;
 
     // Vérifier si le roi du joueur qui VIENT de jouer est en échec
-    // (c'est-à-dire si le coup qu'il vient de jouer met son propre roi en échec)
-    if (isKingInCheck(selectedPiece!.isWhite)) {
-      // Ce n'est pas un coup valide, annuler le mouvement
-      board[selectedRow][selectedCol] = selectedPiece;
+    if (isKingInCheck(movedPiece.isWhite)) {
+      // Annuler le mouvement
+      board[selectedRow][selectedCol] = movedPiece;
       board[newRow][newCol] = null;
 
       // Restaurer la position du roi si nécessaire
-      if (selectedPiece!.type == ChessPieceType.king) {
-        if (selectedPiece!.isWhite) {
+      if (movedPiece.type == ChessPieceType.king) {
+        if (movedPiece.isWhite) {
           whiteKingPosition = [selectedRow, selectedCol];
         } else {
           blackKingPosition = [selectedRow, selectedCol];
         }
-      }
-
-      // Restaurer la pièce capturée si nécessaire
-      if (board[newRow][newCol] == null &&
-          (selectedRow != newRow || selectedCol != newCol)) {
-        // La pièce capturée a été restaurée quand on a annulé le mouvement
       }
 
       setState(() {
@@ -460,28 +456,36 @@ class _GameBoardState extends State<GameBoard> {
       return;
     }
 
-    // Vérifier si le roi adverse est en échec après le mouvement
-    if (isKingInCheck(!isWhiteTurn)) {
-      checkStatus = true;
-    } else {
-      checkStatus = false;
+    // VÉRIFIER LA PROMOTION DU PION - utiliser movedPiece au lieu de selectedPiece
+    if (movedPiece.type == ChessPieceType.pawn) {
+      // Promotion pour les pions blancs (arrivée en ligne 0)
+      if (movedPiece.isWhite && newRow == 0) {
+        _showPromotionDialog(newRow, newCol);
+
+        setState(() {
+          selectedPiece = null;
+          selectedRow = -1;
+          selectedCol = -1;
+          validMoves = [];
+        });
+        return; // Ne pas continuer le mouvement normal
+      }
+      // Promotion pour les pions noirs (arrivée en ligne 7)
+      else if (!movedPiece.isWhite && newRow == 7) {
+        _showPromotionDialog(newRow, newCol);
+
+        setState(() {
+          selectedPiece = null;
+          selectedRow = -1;
+          selectedCol = -1;
+          validMoves = [];
+        });
+        return; // Ne pas continuer le mouvement normal
+      }
     }
 
-    setState(() {
-      selectedPiece = null;
-      selectedRow = -1;
-      selectedCol = -1;
-      validMoves = [];
-    });
-
-    // check if it's checkmate after the move
-    if (isCheckMate(!isWhiteTurn)) {
-      String winner = isWhiteTurn ? "Blancs" : "Noirs";
-      _showCheckmateDialog(winner);
-    }
-
-    //change turn
-    isWhiteTurn = !isWhiteTurn;
+    // Si pas de promotion, continuer avec le mouvement normal
+    _completeMove();
   }
 
   void _showCheckmateDialog(String winner) {
@@ -700,28 +704,207 @@ class _GameBoardState extends State<GameBoard> {
     return true; // no moves found to get the king out of check
   }
 
- //reset the game
-void resetGame() {
-  // shut down any open dialogs
-  if (Navigator.of(context).canPop()) {
-    Navigator.of(context).pop();
+  //reset the game
+  void resetGame() {
+    // Fermer toutes les boîtes de dialogue ouvertes
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
+
+    // Réinitialiser toutes les variables d'état
+    setState(() {
+      _initializeBoard();
+      selectedPiece = null;
+      selectedRow = -1;
+      selectedCol = -1;
+      validMoves = [];
+      whitePiecesTaken.clear();
+      blackPiecesTaken.clear();
+      isWhiteTurn = true;
+      checkStatus = false;
+      whiteKingPosition = [7, 4];
+      blackKingPosition = [0, 4];
+    });
   }
+
+  void _showPromotionDialog(int row, int col) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder:
+          (context) => Dialog(
+            backgroundColor: Colors.transparent,
+            child: Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Colors.grey[900]!, Colors.grey[800]!],
+                ),
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black54,
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    "Promotion du pion",
+                    style: TextStyle(
+                      color: Colors.amber,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    "Choisissez une pièce :",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Reine
+                      _buildPromotionChoice(
+                        ChessPieceType.queen,
+                        row,
+                        col,
+                      ),
+                      // Tour
+                      _buildPromotionChoice(
+                        ChessPieceType.rook,
+                        row,
+                        col,
+                      ),
+                      // Fou
+                      _buildPromotionChoice(
+                        ChessPieceType.bishop,
+                        row,
+                        col,
+                      ),
+                      // Cavalier
+                      _buildPromotionChoice(
+                        ChessPieceType.knight,
+                        row,
+                        col,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
+  Widget _buildPromotionChoice(
+  ChessPieceType type,
+  int row,
+  int col,
+) {
+  String imagePath;
+  bool isWhite = isWhiteTurn;
   
-  // reset all variables
-  setState(() {
-    _initializeBoard();
-    selectedPiece = null;
-    selectedRow = -1;
-    selectedCol = -1;
-    validMoves = [];
-    whitePiecesTaken.clear();
-    blackPiecesTaken.clear();
-    isWhiteTurn = true;
-    checkStatus = false;
-    whiteKingPosition = [7, 4];
-    blackKingPosition = [0, 4];
-  });
+  // Utiliser toujours la même image mais appliquer un filtre de couleur
+  switch (type) {
+    case ChessPieceType.queen:
+      imagePath = 'lib/chessIcon/queenCapy.png';
+      break;
+    case ChessPieceType.rook:
+      imagePath = 'lib/chessIcon/rookCapy.png';
+      break;
+    case ChessPieceType.bishop:
+      imagePath = 'lib/chessIcon/bishopCapy.png';
+      break;
+    case ChessPieceType.knight:
+      imagePath = 'lib/chessIcon/knightCapy.png';
+      break;
+    default:
+      imagePath = 'lib/chessIcon/queenCapy.png';
+  }
+
+  return GestureDetector(
+    onTap: () {
+      _promotePawn(row, col, type, imagePath);
+      Navigator.of(context).pop();
+    },
+    child: Container(
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey[700],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: isWhite
+          ? ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcATop,
+              ),
+              child: Image.asset(
+                imagePath,
+                width: 40,
+                height: 40,
+              ),
+            )
+          : Image.asset(
+              imagePath,
+              width: 40,
+              height: 40,
+            ),
+    ),
+  );
 }
+
+  void _promotePawn(
+    int row,
+    int col,
+    ChessPieceType newType,
+    String imagePath,
+  ) {
+    setState(() {
+      // Remplacer le pion par la nouvelle pièce
+      board[row][col] = ChessPiece(
+        type: newType,
+        isWhite: isWhiteTurn, // La couleur correspond au tour actuel
+        imagePath: imagePath,
+      );
+
+      // Continuer avec la fin du mouvement
+      _completeMove();
+    });
+  }
+
+  void _completeMove() {
+    // Vérifier si le roi adverse est en échec après le mouvement
+    if (isKingInCheck(!isWhiteTurn)) {
+      checkStatus = true;
+    } else {
+      checkStatus = false;
+    }
+
+    setState(() {
+      selectedPiece = null;
+      selectedRow = -1;
+      selectedCol = -1;
+      validMoves = [];
+    });
+
+    // check if it's checkmate after the move
+    if (isCheckMate(!isWhiteTurn)) {
+      String winner = isWhiteTurn ? "Blancs" : "Noirs";
+      _showCheckmateDialog(winner);
+    }
+
+    //change turn
+    isWhiteTurn = !isWhiteTurn;
+  }
 
   @override
   Widget build(BuildContext context) {
